@@ -24,7 +24,7 @@ const verifyUserRequest = async (
       return;
     }
 
-    req.body.id = user?.id;
+    res.locals.id = user.id;
     next();
   } catch (error) {
     console.error(error);

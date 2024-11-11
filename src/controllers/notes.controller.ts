@@ -15,7 +15,7 @@ export type EditNoteBody = {
 const newNotesController = async (req: Request, res: Response) => {
   try {
     const { title, body } = req.body;
-    const id = req.body.id;
+    const id = res.locals.id;
     await db.users.update({
       where: {
         id: id,
@@ -40,7 +40,7 @@ const newNotesController = async (req: Request, res: Response) => {
 const editNotesController = async (req: Request, res: Response) => {
   try {
     const { title, body, id } = req.body;
-    const userId = req.body.id;
+    const userId = res.locals.id;
     await db.users.update({
       where: {
         id: userId,
@@ -59,6 +59,7 @@ const editNotesController = async (req: Request, res: Response) => {
         },
       },
     });
+
     res.status(200).json({ message: "note updated successfully" });
   } catch (error) {
     console.error(error);
@@ -66,19 +67,32 @@ const editNotesController = async (req: Request, res: Response) => {
   }
 };
 
-const deleteSingleNotesController = async (req: Request, res: Response) => {};
+const deleteSingleNotesController = async (req: Request, res: Response) => {
+  try {
+    const userId = res.locals.id;
+    await db.users.delete({
+      where: {
+        id: userId,
+      },
+    });
+    res.status(200).json({ message: "user deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ message: "unknown error" });
+  }
+};
 
 const getAllNotesController = async (req: Request, res: Response) => {
   try {
-    const userId = req.body.id;
+    const userId = res.locals.id;
     const user = await db.users.findUnique({
       where: { id: userId },
       include: { notes: true },
     });
     if (!user) {
-      res.send(400).json({ message: "unauthorized request" });
+      res.status(400).json({ message: "unauthorized request" });
     }
-    res.send(200).json({
+    res.status(200).json({
       message: "get notes success",
       data: {
         notes: user?.notes,
